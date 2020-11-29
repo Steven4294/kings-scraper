@@ -24,8 +24,6 @@ query {
 
 export const getProductsPoll: Task = async (inPayload: any, { addJob, withPgClient }) => {
     const payload: Store = inPayload['store'] as any;
-
-        
     const accessToken = payload.accessToken
     const storeURL = payload.name
 
@@ -56,30 +54,22 @@ export const getProductsPoll: Task = async (inPayload: any, { addJob, withPgClie
     }
 };
 
-
-
 function downloadJSONL(url: any, withPgClient: WithPgClient) {
     https.get(url, (resp: { pipe: (arg0: any) => any; }) => {
         const jsonlParser = new JsonlParser();
-
-      const pipeline = resp.pipe(jsonlParser)
-      var count = 0
-      pipeline.on('data', (data: { value: any; }) => {
-        count++
-
-        result = result + JSON.stringify(data.value) + ","
-
-      });
-      var result = ''
-      pipeline.on('end', () => {
-        result = result.slice(0, -1); 
-
-        result = `[${result}]`
-        console.log(`object count ${count}`)
-        saveData(result, withPgClient)
-      });
-
-
+        const pipeline = resp.pipe(jsonlParser)
+        var count = 0
+        pipeline.on('data', (data: { value: any; }) => {
+            count++
+            result = result + JSON.stringify(data.value) + ","
+        });
+        var result = ''
+        pipeline.on('end', () => {
+            result = result.slice(0, -1); 
+            result = `[${result}]`
+            console.log(`object count ${count}`)
+            saveData(result, withPgClient)
+        });
     })
 }
 
