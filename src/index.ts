@@ -13,9 +13,15 @@ const {parser} = require('stream-json');
 const {pick}   = require('stream-json/filters/Pick');
 const {ignore} = require('stream-json/filters/Ignore');
 const {streamValues} = require('stream-json/streamers/StreamValues');
-const JsonlParser = require('stream-json/jsonl/Parser');
-const jsonlParser = new JsonlParser();
+
 const fs   = require('fs');
+
+import { sequelize } from './db'
+import { getProductsPoll } from './tasks/productUpdate'
+import Store from './db/models/Store'
+
+sequelize.sync()
+
 
 // import db from '../server/api/models.js'
 
@@ -38,11 +44,13 @@ async function main() {
     const runner = await run({
         connectionString: uri,
         concurrency: 5,
+        maxPoolSize: 10,
         noHandleSignals: false,
         pollInterval: 1000,
 
         taskList: {
             productUpdate: async (payload: { productVariantDic: any; domain: any; }, helpers: any) => {
+
               const { productVariantDic, domain } = payload;
             
               const ids = productVariantDic.map((variant: { id: any; }) => variant.id)
@@ -56,8 +64,12 @@ async function main() {
 
 
             },
+            getProducts: getProductsPoll,
+            
             installStore: async (payload: { store: any; }, helpers: any) => {
                 // make gql query to fetch products. kick off getProduct
+
+
                 const store = payload.store
                 const token = store.accessToken
                 const storeURL = store.name
@@ -67,61 +79,7 @@ async function main() {
 
             },
 
-            getProducts: async (payload: { store: any; }, helpers: any) => {
-              const store = payload.store
-              const accessToken = store.accessToken
-              const storeURL = store.name
-
-                console.log(`   >>> 2 ${storeURL} : ${accessToken}`)
-
-                const endpoint = `https://${storeURL}/admin/api/2020-10/graphql.json`
-                const client = new GraphQLClient(endpoint, { headers: {
-                  'Content-Type': 'application/json',
-                  'X-Shopify-Access-Token': accessToken,
-                } })
-
-                const query = `
-                query {
-                    currentBulkOperation {
-                      id
-                      status
-                      errorCode
-                      createdAt
-                      completedAt
-                      objectCount
-                      fileSize
-                      url
-                      partialDataUrl
-                    }
-                  }
-                `
-                const variables = ''
-                client.request(query, variables).then(async (data) => {
-                    const status = data.currentBulkOperation.status
-                    console.log(status)
-
-                    if (status === 'CREATED' || status === 'RUNNING') {
-                      const date = new Date((new Date()).getTime() + 0.5*60000)
-                      console.log(`adding another getProductsPoll ${date}`)
-
-                        await quickAddJob(
-                            { connectionString: uri },
-                            "getProducts", // Task identifier
-                            { store: store }, // payload
-                            {
-                              runAt: date
-                            }
-                        );
-                    } else if(status === 'COMPLETED') {
-                        const url = data.currentBulkOperation.url
-                        downloadJSONL(url)
-                    } else {
-
-                    }
-
-                })
-
-            },
+            
             getAbandonedCheckouts: async (payload: any, helpers: any) => {
               // TODO: get abandoned checkouts
               // const productId = "36985046991006"
@@ -177,15 +135,23 @@ async function main() {
 
 //       const stores = await Store.findAll();
 //       const store = stores[0]
-        const store = {
-            accessToken: "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",
-            name: "zeiger-5.myshopify.com"
-        }
+        // const store = {
+        //     accessToken: "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",
+        //     name: "zeiger-5.myshopify.com"
+        // }
+    // await quickAddJob(
+    //     { connectionString: uri },
+    //     "installStore", // Task identifier
+    //     { store: store }, // payload
+    // );
+
+    const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.myshopify.com', accessToken: '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'})
+    
     await quickAddJob(
-        { connectionString: uri },
-        "installStore", // Task identifier
-        { store: store }, // payload
-    );
+      { connectionString: uri },
+      "getProducts", // Task identifier
+      { store }, // payload
+  );
 
 //     await quickAddJob(
 //       { connectionString: uri },
@@ -201,9 +167,9 @@ async function main() {
 
     }, 1000)
 
-    sendKlaviyoEvent()
+    // sendKlaviyoEvent()
 
-    test()
+    // test()
 }
 
 async function test() {
@@ -213,80 +179,6 @@ async function test() {
   // await saveData(data)
 }
   
-function downloadJSONL(url: any) {
-    https.get(url, (resp: { pipe: (arg0: any) => any; }) => {
-      const pipeline = resp.pipe(jsonlParser)
-      var count = 0
-      pipeline.on('data', (data: { value: any; }) => {
-        count++
-
-        result = result + JSON.stringify(data.value) + ","
-
-      });
-      var result = ''
-      pipeline.on('end', () => {
-        result = result.slice(0, -1); 
-
-        result = `[${result}]`
-        console.log(`object count ${count}`)
-        saveData(result)
-      });
-    })
-}
-
-// TODO: fix
-// Error [ERR_STREAM_WRITE_AFTER_END]: write after end
-// at writeAfterEnd (_stream_writable.js:243:12)
-// at JsonlParser.Writable.write (_stream_writable.js:291:5)
-async function saveData(data: string) {
-  console.log(`saving data...`)
-
-  // const pool = new Pool({
-  //   uri,
-  // })
-  // pool.query('SELECT NOW()', (err, res) => {
-  //   console.log(err, res)
-  //   pool.end()
-  // })
-  const client = new Client({
-    uri,
-  })
-  client.connect()
-  client.query('SELECT NOW()', (err: any, res: any) => {
-    console.log(err, res)
-    client.end()
-  })
-//   const client = new Client()
-// await client.connect({uri,})
-// // const res = await client.query('SELECT NOW()')
-
-//   // var client = await pool.connect()
-//   try {
-//     var start = new Date()
-//     await client.query(`insert into product_variants (id, price, "createdAt", "updatedAt") select a->>'id', a->>'price', now(), now() from json_array_elements($1::json) a on conflict (id) do update set price = excluded.price, "updatedAt" = now()`, [data])
-
-//     var end = new Date() - start
-//     console.log(`execution time ${end}`)
-//     await client.end()
-
-//     // client.release()
-//   } catch (error) {
-//     await client.end()
-
-//     // client.release(error)
-//     throw error
-//   }
-
-//   const stores = await Store.findAll();
-//   const store = stores[0]
-
-// await quickAddJob(
-//     { connectionString: uri },
-//     "installStore", // Task identifier
-//     { store: store }, // payload
-// );
-  console.log('saved data')
-}
 
 async function getProductVariants(store: any, storeURL: any, token: any) {
   const endpoint = `https://${storeURL}/admin/api/2020-10/graphql.json`
