@@ -23,9 +23,10 @@ query {
 `
 
 export const getProductsPoll: Task = async (inPayload: any, { addJob, withPgClient }) => {
-    const payload: Store = inPayload['store'] as any;
-    const accessToken = payload.accessToken
-    const storeURL = payload.name
+
+    const store: Store = inPayload['payload'] as any;
+    const accessToken = store.accessToken
+    const storeURL = store.name
 
     const endpoint = `https://${storeURL}/admin/api/2020-10/graphql.json`
     const client = new GraphQLClient(endpoint, { headers: {
@@ -35,15 +36,15 @@ export const getProductsPoll: Task = async (inPayload: any, { addJob, withPgClie
 
     const data = await client.request(graphqlQuery, '')
     const status = data.currentBulkOperation.status
-    console.log(`adding another getProductsPoll ${status}`)
+    console.log(`${status}`)
     if (status === 'CREATED' || status === 'RUNNING') {
-        const date = new Date((new Date()).getTime() + 0.5*60000)
-        console.log(`adding another getProductsPoll ${date}`)
+        const date = new Date((new Date()).getTime() + 1.0*60000)
+        console.log(`   >>> QUEUEING another GetProductsPoll() @ ${date}`)
 
         await quickAddJob(
             { connectionString: uri },
             "getProducts", // Task identifier
-            { payload }, // payload
+            { payload: store }, // payload
             {
                 runAt: date
             }
@@ -80,22 +81,10 @@ const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.my
 // at writeAfterEnd (_stream_writable.js:243:12)
 // at JsonlParser.Writable.write (_stream_writable.js:291:5)
 async function saveData(data: string, withPgClient: WithPgClient) {
-  console.log(`saving data...`)
+    console.log(`saving data...`)
 
     await withPgClient((pgClient) => {
         console.log(`updatets called`)
         return pgClient.query(`insert into "ProductVariants" (id, price, "createdAt", "updatedAt") select a->>'id', a->>'price', now(), now() from json_array_elements($1::json) a on conflict (id) do update set price = excluded.price, "updatedAt" = now()`, [data])}
-    );
-
-    console.log('saved data')
-    const date = new Date((new Date()).getTime() + 0.5*60000)
-
-    await quickAddJob(
-        { connectionString: uri },
-        "getProducts", // Task identifier
-        { store }, // payload
-        {
-            runAt: date
-        }
     );
 }
