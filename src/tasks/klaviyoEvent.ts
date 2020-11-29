@@ -6,6 +6,13 @@ import Cart from "../db/models/Cart";
 const https = require('https');
 const request = require('request');
 
+interface Email {
+    email: string,
+    url: string,
+    product_id: string,
+    price_old: string,
+    price_new: string,
+}
 /*
 inPayload =
             store: Store
@@ -21,32 +28,47 @@ export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient 
     const store: Store = inPayload['payload']['store'] as Store
     const deltas = inPayload['payload']['deltas']
 
-    console.log(store)
     console.log(deltas)
     // console.log(payload)
+
     const productIds = deltas.map((p: { id: any; }) => p.id)// ['gid://shopify/ProductVariant/37019409973406']
     if (productIds.length === 0) { return }
     const promises = productIds.map(async (id: any) => {
-      return await getCart(id)
+      return await getProductVariant(id)
     })
 
-    const carts = (await Promise.all(promises)).map((x: any) => x)
-    
-    const emailObjects = carts.map( (cart: { dataValues: { productVariant_cart: { dataValues: { productVariant_id: any; }; }; email: any; abandoned_checkout_url: any; }; }) => {
-      console.log(cart.dataValues.productVariant_cart)
-      const product_id = cart.dataValues.productVariant_cart.dataValues.productVariant_id
-      const productVariant = deltas.filter((x: { id: any; }) => x.id === product_id)[0]
+    const productVariants: ProductVariant[] = await Promise.all(promises)
+    const emailMatrix: Email[][] = productVariants.map( (productVariant: ProductVariant) => {
+        return productVariant.carts.map(cart => {
+            const product = deltas.filter((x: { id: any; }) => x.id === productVariant.id)[0]
 
-      return {
-        email: cart.dataValues.email,
-        url: cart.dataValues.abandoned_checkout_url,
-        product_id: product_id,
-        price_old: productVariant.price_old,
-        price_new: productVariant.price_new
-      }
+            return {
+                email: cart.email,
+                url: cart.abandoned_checkout_url,
+                product_id: productVariant.id,
+                price_old: product.price_old, // 23
+                price_new: product.price_new
+            }
+        })
+
     })
 
-    console.log(emailObjects)
+    const emails: Email[] = ([] as any).concat(... emailMatrix);
+    console.log(emails)
+    emails.map(email => {
+        sendKlaviyoEvent(email, store)
+    })
+
+    deltas.forEach((delta: any) => {
+        console.log(`should update product ${delta.id} from ${delta.price_old} -> **${delta.price_new}**`)
+        ProductVariant.update({
+                price: delta.price_new
+            }, {
+                where: {
+                    id: delta.id
+            }
+        }) 
+    })
 
     // const store: Store = inPayload['payload'] as any;
     // const token = store.accessToken;
@@ -60,7 +82,7 @@ export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient 
 };
 
 
-async function getCart(id: string) {
+async function getProductVariant(id: string): Promise<ProductVariant> {
     const product = await ProductVariant.findOne({
       where: {
         id: id
@@ -73,13 +95,13 @@ async function getCart(id: string) {
       }]
     })
   
-    return product?.carts
+    return product!
 }
   
-function sendKlaviyoEvent() {
+function sendKlaviyoEvent(email: Email, store: Store) {
     var options = {
       'method': 'GET',
-      'url': `https://a.klaviyo.com/api/track?data=${getEmailEncoded()}`,
+      'url': `https://a.klaviyo.com/api/track?data=${getEmailEncoded(email, store)}`,
       'headers': { }
     };
     request(options, function (error: string | undefined, response: { body: any; }) {
@@ -88,19 +110,23 @@ function sendKlaviyoEvent() {
     });
 }
   
-function getEmailEncoded() {
+function getEmailEncoded(email: Email, store: Store) {
+    const time = parseInt(`${(new Date()).getTime() / 1000}`);
     const payload = {
-      "token" : "TimvnR",
-      "event" : "Elected President",
+      "token" : store.klaviyoAPIKey!,
+      "event" : "Price Drop",
       "customer_properties" : {
-        "$email" : "stevenpetterutijr@gmail.com"
+        "$email" : email.email
       },
       "properties" : {
-        "PreviouslyVicePresident" : true,
-        "YearElected" : 1801,
-        "VicePresidents" : ["Aaron Burr", "George Clinton"]
+        "price_new" : email.price_new,
+        "price_old" : email.price_old,
+        "checkout_url" : email.url,
+        "id": email.product_id
       },
-      "time" : 1606416502
+      "time" : time,
     }
-    return Buffer.from(JSON.stringify(payload)).toString('base64')
+    const encoded = Buffer.from(JSON.stringify(payload)).toString('base64')
+    console.log(payload)
+    return encoded
 }

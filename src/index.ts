@@ -32,6 +32,15 @@ async function main() {
 					}
 				})
 
+				if (variants.length === 0) {
+					productVariantDic.map((variant: any) => {
+						ProductVariant.create({
+							id: variant.id,
+							price: variant.price
+						})
+					})
+				}
+
 				const oldDic = variants.map(v => {return { id: v.id, price: v.price }})
 				const deltas = oldDic.map(v => {
 				 	const matches = productVariantDic.filter((v2: { id: string; }) => v2.id === v.id)
@@ -44,13 +53,19 @@ async function main() {
 						console.log(`PRICE DROP: ${v.id} ${oldPrice} -> ${newPrice}`)
 						return {
 							id: match.id,
-							price_old: match.price,
-							price_new: v.price,
+							price_old: v.price,
+							price_new: match.price,
 						}
+					} else {
+						// it was a price hike!
+						ProductVariant.update({
+							price: match.price
+						}, {
+							where: { id: match.id },
+						})
 					}
 				}).filter(v => v !== undefined)
 				if (deltas.length === 0) { return }
-
 
 				const store = await Store.findOne({
 					where: {
@@ -67,9 +82,6 @@ async function main() {
 						deltas: deltas,
 					}
 				});
-
-			  
-			  // TODO: fire off klaviyoEvent
             },
             getProducts: getProductsPoll,
             installStore: installStore,
