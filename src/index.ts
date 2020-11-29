@@ -5,6 +5,7 @@ import { getProductsPoll } from './tasks/getProductsPoll'
 import { installStore } from './tasks/installStore';
 import Store from './db/models/Store'
 import { klaviyoEvent } from './tasks/klaviyoEvent';
+import ProductVariant from './db/models/ProductVariant';
 const { run, quickAddJob } = require("graphile-worker");
 
 const uri = 'postgres://edwfxtxadowqjw:3dc337268b226f9b4ee934a5c817c3a5e9517c65ea07779a6438f63f92a53d8b@ec2-54-158-190-214.compute-1.amazonaws.com:5432/dajno1b88amgs9?ssl=no-verify'
@@ -23,8 +24,54 @@ async function main() {
 
         taskList: {
             productUpdate: async (payload: { productVariantDic: any; domain: any; }, helpers: any) => {
-              const { productVariantDic, domain } = payload;            
-			  const ids = productVariantDic.map((variant: { id: any; }) => variant.id)
+              	const { productVariantDic, domain } = payload;            
+			  	const ids = productVariantDic.map((variant: { id: any; }) => variant.id)
+				const variants: ProductVariant[] = await ProductVariant.findAll({
+					where: {
+						id: ids
+					}
+				})
+				console.log(variants)
+				const oldDic = variants.map(v => {return { id: v.id, price: v.price }})
+				console.log(oldDic)
+			//   ProductVariant.findAll({
+            //     where: {
+            //       id: ids
+            //     }
+            //   }).then(async variants => {
+            //     const oldDic = variants.map(v => {
+            //       return {
+            //         id: v.dataValues.id,
+            //         price: v.dataValues.price, 
+            //       }
+            //     })
+
+            //     const deltas = oldDic.flatMap(v => {
+            //       const matches = productVariantDic.filter(v2 => v2.id === v.id)
+            //       if (matches !== undefined && matches.length > 0) {
+            //         const match = matches[0]
+            //         const newPrice = parseFloat(match.price)
+            //         const oldPrice = parseFloat(v.price);
+
+            //         if (newPrice < oldPrice) {
+            //           console.log(`PRICE DROP: ${v.id} ${oldPrice} -> ${newPrice}`)
+            //           return {
+            //             id: match.id,
+            //             price_old: match.price,
+            //             price_new: v.price,
+            //           }
+            //         }
+            //       }
+            //     }).filter(v => v !== undefined)
+
+            //     if (deltas.length === 0) { return }
+
+            //   const store = await Store.findOne({
+            //     where: {
+            //       id: domain
+            //     }
+			//   })
+			  
 			  
 			  // TODO: fire off klaviyoEvent
             },
