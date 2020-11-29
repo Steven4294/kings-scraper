@@ -32,8 +32,6 @@ sequelize.sync()
 // db.sequelize.sync()
 
 
-
-  
 const { Pool, Client } = require('pg')
 const uri = 'postgres://edwfxtxadowqjw:3dc337268b226f9b4ee934a5c817c3a5e9517c65ea07779a6438f63f92a53d8b@ec2-54-158-190-214.compute-1.amazonaws.com:5432/dajno1b88amgs9?ssl=no-verify'
 
@@ -50,19 +48,8 @@ async function main() {
 
         taskList: {
             productUpdate: async (payload: { productVariantDic: any; domain: any; }, helpers: any) => {
-
-              const { productVariantDic, domain } = payload;
-            
+              const { productVariantDic, domain } = payload;            
               const ids = productVariantDic.map((variant: { id: any; }) => variant.id)
-
-
-
-
-              // [ { id: 'gid://shopify/ProductVariant/36985047089310', price: '11.00' } ]   
-
-
-
-
             },
             getProducts: getProductsPoll,
             
