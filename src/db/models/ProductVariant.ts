@@ -1,4 +1,6 @@
-import {Table, Column, Model, HasMany, PrimaryKey} from 'sequelize-typescript';
+import {Table, Column, Model, HasMany, PrimaryKey, BelongsToMany} from 'sequelize-typescript';
+import ProductVariantCart from './ProductVariantCart';
+import Cart from './Cart';
  
 @Table
 export default class ProductVariant extends Model implements ProductVariant {
@@ -9,4 +11,7 @@ export default class ProductVariant extends Model implements ProductVariant {
     
     @Column
     price!: string;
+
+    @BelongsToMany(() => Cart, () => ProductVariantCart)
+    carts!: Cart[];
 }

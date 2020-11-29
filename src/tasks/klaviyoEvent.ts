@@ -1,39 +1,52 @@
 import { Task, quickAddJob, WithPgClient } from "graphile-worker";
 import Store from '../db/models/Store';
 import { GraphQLClient } from 'graphql-request';
+import ProductVariant from "../db/models/ProductVariant";
+import Cart from "../db/models/Cart";
 const https = require('https');
 const request = require('request');
 
+/*
+inPayload =
+            store: Store
+            deltas: [ 
+                { id: 'gid://shopify/ProductVariant/37019409973406',                                                   
+                price_old: '22.00',                                                                                  
+                price_new: '23.00' } ]  
+*/
+
+
 export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient }) => {
-    console.log(inPayload)
-    console.log(`klaviyoEvent() called`)
 
+    const store: Store = inPayload['payload']['store'] as Store
+    const deltas = inPayload['payload']['deltas']
+
+    console.log(store)
+    console.log(deltas)
     // console.log(payload)
-    // const productIds = payload.productVariants.map((p: { id: any; }) => p.id)// ["36985046991006"]
-    // if (productIds.length === 0) { return }
-    // const promises = productIds.map(async (id: any) => {
-    //   return await getCart(id)
-    // })
+    const productIds = deltas.map((p: { id: any; }) => p.id)// ['gid://shopify/ProductVariant/37019409973406']
+    if (productIds.length === 0) { return }
+    const promises = productIds.map(async (id: any) => {
+      return await getCart(id)
+    })
 
-    // const carts = (await Promise.all(promises)).map((x: any) => x)
-    // console.log('**** CARTS ****')
+    const carts = (await Promise.all(promises)).map((x: any) => x)
+    
+    const emailObjects = carts.map( (cart: { dataValues: { productVariant_cart: { dataValues: { productVariant_id: any; }; }; email: any; abandoned_checkout_url: any; }; }) => {
+      console.log(cart.dataValues.productVariant_cart)
+      const product_id = cart.dataValues.productVariant_cart.dataValues.productVariant_id
+      const productVariant = deltas.filter((x: { id: any; }) => x.id === product_id)[0]
 
-    // const emailObjects = carts.map( (cart: { dataValues: { productVariant_cart: { dataValues: { productVariant_id: any; }; }; email: any; abandoned_checkout_url: any; }; }) => {
-    //   console.log(cart.dataValues.productVariant_cart)
-    //   const product_id = cart.dataValues.productVariant_cart.dataValues.productVariant_id
-    //   const productVariant = payload.productVariants.filter((x: { id: any; }) => x.id === product_id)[0]
+      return {
+        email: cart.dataValues.email,
+        url: cart.dataValues.abandoned_checkout_url,
+        product_id: product_id,
+        price_old: productVariant.price_old,
+        price_new: productVariant.price_new
+      }
+    })
 
-    //   return {
-    //     email: cart.dataValues.email,
-    //     url: cart.dataValues.abandoned_checkout_url,
-    //     product_id: product_id,
-    //     price_old: productVariant.price_old,
-    //     price_new: productVariant.price_new
-
-    //   }
-    // })
-
-    // console.log(emailObjects)
+    console.log(emailObjects)
 
     // const store: Store = inPayload['payload'] as any;
     // const token = store.accessToken;
@@ -47,27 +60,20 @@ export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient 
 };
 
 
-async function getCart(id: any) {
-    // const gid = `gid://shopify/ProductVariant/${id}`
-  //   const product = await ProductVariant.findOne({
-  //     where: {
-  //       id: id
-  //     },
-  //       include: [{
-  //       model: Cart,
-  //       as: 'carts',
-  //       required: false,
-  //       attributes: ['id', 'email', 'abandoned_checkout_url'],
-  //     }]
-  //   })
+async function getCart(id: string) {
+    const product = await ProductVariant.findOne({
+      where: {
+        id: id
+      },
+        include: [{
+        model: Cart,
+        as: 'carts',
+        required: false,
+        attributes: ['id', 'email', 'abandoned_checkout_url'],
+      }]
+    })
   
-    // console.log(product)
-    // console.log('>>>')
-    // product.carts.map(cart => {
-  
-    // })
-  
-    //return product.carts
+    return product?.carts
 }
   
 function sendKlaviyoEvent() {

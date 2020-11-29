@@ -31,47 +31,43 @@ async function main() {
 						id: ids
 					}
 				})
-				console.log(variants)
+
 				const oldDic = variants.map(v => {return { id: v.id, price: v.price }})
-				console.log(oldDic)
-			//   ProductVariant.findAll({
-            //     where: {
-            //       id: ids
-            //     }
-            //   }).then(async variants => {
-            //     const oldDic = variants.map(v => {
-            //       return {
-            //         id: v.dataValues.id,
-            //         price: v.dataValues.price, 
-            //       }
-            //     })
+				const deltas = oldDic.map(v => {
+				 	const matches = productVariantDic.filter((v2: { id: string; }) => v2.id === v.id)
+				  	if (matches === undefined || matches.length === 0) { return }
+					const match = matches[0]
+					const newPrice = parseFloat(match.price)
+					const oldPrice = parseFloat(v.price);
 
-            //     const deltas = oldDic.flatMap(v => {
-            //       const matches = productVariantDic.filter(v2 => v2.id === v.id)
-            //       if (matches !== undefined && matches.length > 0) {
-            //         const match = matches[0]
-            //         const newPrice = parseFloat(match.price)
-            //         const oldPrice = parseFloat(v.price);
+					if (newPrice < oldPrice) {
+						console.log(`PRICE DROP: ${v.id} ${oldPrice} -> ${newPrice}`)
+						return {
+							id: match.id,
+							price_old: match.price,
+							price_new: v.price,
+						}
+					}
+				}).filter(v => v !== undefined)
+				if (deltas.length === 0) { return }
 
-            //         if (newPrice < oldPrice) {
-            //           console.log(`PRICE DROP: ${v.id} ${oldPrice} -> ${newPrice}`)
-            //           return {
-            //             id: match.id,
-            //             price_old: match.price,
-            //             price_new: v.price,
-            //           }
-            //         }
-            //       }
-            //     }).filter(v => v !== undefined)
 
-            //     if (deltas.length === 0) { return }
+				const store = await Store.findOne({
+					where: {
+						id: domain
+					}
+				})
 
-            //   const store = await Store.findOne({
-            //     where: {
-            //       id: domain
-            //     }
-			//   })
-			  
+				await quickAddJob( 
+				{ connectionString: uri },
+				"sendKlaviyoEvents", // Task identifier
+				{ 
+					payload: {
+						store: store,
+						deltas: deltas,
+					}
+				});
+
 			  
 			  // TODO: fire off klaviyoEvent
             },
@@ -97,11 +93,11 @@ async function main() {
 
 	const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.myshopify.com', accessToken: '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'})
 	console.log(` >>> SHOULD BE INIT() JOBS <<<`)
-    await quickAddJob(
-        { connectionString: uri },
-        "installStore", // Task identifier
-        { payload: store }, // payload
-    );
+    // await quickAddJob(
+    //     { connectionString: uri },
+    //     "installStore", // Task identifier
+    //     { payload: store }, // payload
+    // );
 	// await quickAddJob(
 	// 	{ connectionString: uri },
 	// 	"getProducts", // Task identifier
