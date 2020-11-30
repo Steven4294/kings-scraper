@@ -4,13 +4,15 @@
     "emitDecoratorMetadata": true,
     "target": "es6",                          
     "module": "commonjs",                    
-    "lib": ["es6"],                     
+    "lib": ["es2019"],                     
     "allowJs": true,
     "outDir": "build",                          
     "rootDir": "src",
     "strict": true,         
     "noImplicitAny": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+
+
   }
 }

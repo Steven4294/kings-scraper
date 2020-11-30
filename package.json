@@ -29,6 +29,7 @@
     "graphile-worker": "^0.8.1",
     "graphql": "^15.4.0",
     "graphql-request": "^3.3.0",
+    "node-fetch": "^2.6.1",
     "reflect-metadata": "^0.1.13",
     "request": "^2.88.2",
     "sequelize": "^5.22.3",
