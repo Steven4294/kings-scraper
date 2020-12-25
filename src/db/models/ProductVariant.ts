@@ -12,6 +12,9 @@ export default class ProductVariant extends Model implements ProductVariant {
     @Column
     price!: string;
 
+    @Column
+    imgSrc?: string;
+
     @BelongsToMany(() => Cart, () => ProductVariantCart)
     carts!: Cart[];
 }

@@ -16,6 +16,11 @@ mutation {
           node {
             id
             price
+            product {
+              featuredImage {
+                originalSrc
+              }
+            }
           }
         }
       }
@@ -35,78 +40,26 @@ mutation {
 
 export const installStore: Task = async (inPayload: any, { addJob, withPgClient }) => {
     const store: Store = inPayload['payload'] as any;
-    const token = store.accessToken;
-    const storeURL = store.name;
 
     console.log(`~~~~ running install store ~~~~`)
   
-
-    getShopifyCheckouts(storeURL, token, withPgClient)
     getProductVariants(store)
+
+    await quickAddJob(
+        { connectionString: uri },
+        "abandonedCheckouts", // Task identifier
+        { store: store }, // payload
+    );
 };
 
-async function getShopifyCheckouts(storeURL: string, token: string, withPgClient: WithPgClient) {
-    var options = {
-      'method': 'GET',
-      'url': `https://${storeURL}/admin/api/2020-10/checkouts.json`,
-      'headers': {
-        'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': token
-      }
-    };
-  
-    return request(options, async (error: string | undefined, response: { body: string; }) => {
-      if (error) throw new Error(error);
-      const body = JSON.parse(response.body)
-      const checkouts = body.checkouts.map((checkout: { [x: string]: any[]; email: any; abandoned_checkout_url: any; id: any; }) => {
-        const items = checkout["line_items"].map((item: { [x: string]: any; }) => {
-          return {
-            "id": `gid://shopify/ProductVariant/${item["variant_id"]}`
-          }
-        })
-        console.log(items)
-        return {
-          email: checkout.email,
-          abandoned_checkout_url: checkout.abandoned_checkout_url,
-          items: items,
-          id: `${checkout.id}`,
-        }
-      })
-      
-      const checkoutJoin = JSON.stringify(checkouts.map((checkout: { items: any[]; id: any; }) => {
-        return checkout.items.map((item: { id: any; }) => {
-          return {
-            cart_id: checkout.id,
-            productVariant_id: item.id,
-          }
-        })
-      }).flatMap((x: any) => x))
-  
-      const cartJson = JSON.stringify(checkouts.map((checkout: { id: any; email: any; abandoned_checkout_url: any; }) => {
-          return {
-            id: checkout.id,
-            email: checkout.email,
-            abandoned_checkout_url: checkout.abandoned_checkout_url
-          }
-      }));
-  
-        await withPgClient((pgClient) => {
-            console.log(`updatets called`)
-            pgClient.query(`insert into "Carts" (id, email, "abandoned_checkout_url", "createdAt", "updatedAt") select a->>'id', a->>'email', a->>'abandoned_checkout_url', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [cartJson])
-
-            return pgClient.query(`insert into "ProductVariantCarts" (cart_id, "productVariant_id", "createdAt", "updatedAt") select a->>'cart_id', a->>'productVariant_id', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [checkoutJoin])
-
-        });
-    });
-  }
-
-  async function getProductVariants(store: Store) {
+async function getProductVariants(store: Store) {
     const endpoint = `https://${store.name}/admin/api/2020-10/graphql.json`
     const client = new GraphQLClient(endpoint, { headers: {
       'Content-Type': 'application/json',
       'X-Shopify-Access-Token': store.accessToken,
     } })
   
+    console.log(`key: ${store.accessToken} || ${endpoint} == ${store.klaviyoAPIKey}`)
     const variables = ''
     client.request(query, variables).then(async (data) => {
       const date = new Date((new Date()).getTime() + 0.1*60000)

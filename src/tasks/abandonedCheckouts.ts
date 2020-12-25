@@ -68,14 +68,17 @@ async function getShopifyCheckouts(payload: AbandonedCheckoutPayload, withPgClie
         console.log(`performing new fetch ${lastId.id}`)
         await saveCheckouts(checkouts, withPgClient)
 
+        const date = new Date((new Date()).getTime() + 0.55*60000)
+
         await quickAddJob(
             { connectionString: uri },
             "abandonedCheckouts", // Task identifier
             {   store: payload.store,
-                since_id: lastId.id }) // payload
+                since_id: lastId.id },
+            { runAt: date }) // payload
         
     } else {
-        console.log(`NO MORE checkouts!!`)
+        // no more checkouts
     }
 }
 

@@ -105,25 +105,19 @@ async function main() {
         // }
 
 
-	const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.myshopify.com', accessToken: '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'})
+	const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.myshopify.com', accessToken: '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'})
 	console.log(` >>> SHOULD BE INIT() JOBS <<<`)
-    // await quickAddJob(
-    //     { connectionString: uri },
-    //     "installStore", // Task identifier
-    //     { payload: store }, // payload
-    // );
+    await quickAddJob(
+        { connectionString: uri },
+        "installStore", // Task identifier
+        { payload: store }, // payload
+    );
 	// await quickAddJob(
 	// 	{ connectionString: uri },
 	// 	"getProducts", // Task identifier
 	// 	{ payload: store }, // payload
 	// );
-    await quickAddJob(
-      { connectionString: uri },
-      "abandonedCheckouts", // Task identifier
-	  { store: store,
-		
-	}, // payload
-  );
+
 
   
   // await quickAddJob(

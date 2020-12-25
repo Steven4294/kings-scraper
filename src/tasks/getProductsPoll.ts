@@ -24,6 +24,8 @@ query {
 
 export const getProductsPoll: Task = async (inPayload: any, { addJob, withPgClient }) => {
 
+    // test(withPgClient)
+    // return;
     const store: Store = inPayload['payload'] as any;
     const accessToken = store.accessToken
     const storeURL = store.name
@@ -81,10 +83,14 @@ const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.my
 // at writeAfterEnd (_stream_writable.js:243:12)
 // at JsonlParser.Writable.write (_stream_writable.js:291:5)
 async function saveData(data: string, withPgClient: WithPgClient) {
-    console.log(`saving data...`)
-
     await withPgClient((pgClient) => {
         console.log(`updatets called`)
-        return pgClient.query(`insert into "ProductVariants" (id, price, "createdAt", "updatedAt") select a->>'id', a->>'price', now(), now() from json_array_elements($1::json) a on conflict (id) do update set price = excluded.price, "updatedAt" = now()`, [data])}
+        return pgClient.query(`insert into "ProductVariants" (id, price, "imgSrc", "createdAt", "updatedAt") select a->>'id', a->>'price', a#>>'{product,featuredImage,originalSrc}', now(), now() from json_array_elements($1::json) a on conflict (id) do update set price = excluded.price, "updatedAt" = now(), "imgSrc" = excluded."imgSrc"`, [data])}
     );
 }
+
+function test(withPgClient: WithPgClient) {
+    const mockData = '[{"id":"gid:\/\/shopify\/ProductVariant\/36986010435742","price":"13.00","product":{"featuredImage":{"originalSrc":"https:\/\/cdn.shopify.com\/s\/files\/1\/0513\/3366\/0830\/products\/ScreenShot2020-10-28at8.33.16PM.png?v=1606090995"}}},{"id":"gid:\/\/shopify\/ProductVariant\/36986010468510","price":"21.00","product":{"featuredImage":{"originalSrc":"https:\/\/cdn.shopify.com\/s\/files\/1\/0513\/3366\/0830\/products\/ScreenShot2020-10-28at8.33.16PM.png?v=1606090995"}}}]'
+
+    saveData(mockData, withPgClient)
+} 
