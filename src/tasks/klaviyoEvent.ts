@@ -8,10 +8,10 @@ const request = require('request');
 
 interface Email {
     email: string,
-    url: string,
-    product_id: string,
     price_old: string,
     price_new: string,
+    cart: Cart,
+    productVariant: ProductVariant,
 }
 /*
 inPayload =
@@ -45,8 +45,8 @@ export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient 
             const product = deltas.filter((x: { id: any; }) => x.id === productVariant.id)[0]
             return {
                 email: cart.email,
-                url: cart.abandoned_checkout_url,
-                product_id: productVariant.id,
+                cart: cart,
+                productVariant: productVariant,
                 price_old: product.price_old, // 23
                 price_new: product.price_new
             }
@@ -125,14 +125,27 @@ function getEmailEncoded(email: Email, store: Store) {
         "$email" : email.email
       },
       "properties" : {
-        "price_new" : email.price_new,
-        "price_old" : email.price_old,
-        "checkout_url" : email.url,
-        "id": email.product_id
+        // "price_new" : email.price_new,
+        // "price_old" : email.price_old,
+        "products": [{
+          "title": email.productVariant.title,
+          "handle": email.productVariant.handle,
+          "url": email.productVariant.imgSrc,
+          "variant": [],
+          "quantity": 1,
+          "line_price": email.price_new,
+          "line_price_old": email.price_old,
+        }],
+        "checkout_url" : removeHttps(email.cart.abandoned_checkout_url),
+        // "id": email.product_id
       },
       "time" : time,
     }
     const encoded = Buffer.from(JSON.stringify(payload)).toString('base64')
     console.log(payload)
     return encoded
+}
+
+function removeHttps(url: string): string {
+  return url.replace(/^https?\:\/\//i, "");
 }
