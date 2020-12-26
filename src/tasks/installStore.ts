@@ -20,6 +20,8 @@ mutation {
               featuredImage {
                 originalSrc
               }
+              handle
+              title
             }
           }
         }

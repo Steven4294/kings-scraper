@@ -24,6 +24,7 @@ interface Checkout {
 
 export const abandonedCheckoutsTask: Task = async (inPayload: any, { addJob, withPgClient }) => {
     const payload: AbandonedCheckoutPayload = inPayload as AbandonedCheckoutPayload;
+    console.log(`abandoned checkout payload ${payload.store.accessToken} ${payload.since_id}`)
     getShopifyCheckouts(payload, withPgClient)
 }
 

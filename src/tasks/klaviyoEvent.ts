@@ -17,8 +17,8 @@ interface Email {
 inPayload =
             store: Store
             deltas: [ 
-                { id: 'gid://shopify/ProductVariant/37019409973406',                                                   
-                price_old: '22.00',                                                                                  
+                { id: 'gid://shopify/ProductVariant/37019409973406',
+                price_old: '22.00',
                 price_new: '23.00' } ]  
 */
 
@@ -29,7 +29,7 @@ export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient 
     const deltas = inPayload['payload']['deltas']
 
     console.log(deltas)
-    // console.log(payload)
+    console.log(store)
 
     const productIds = deltas.map((p: { id: any; }) => p.id)// ['gid://shopify/ProductVariant/37019409973406']
     if (productIds.length === 0) { return }
@@ -38,10 +38,11 @@ export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient 
     })
 
     const productVariants: ProductVariant[] = await Promise.all(promises)
+
     const emailMatrix: Email[][] = productVariants.map( (productVariant: ProductVariant) => {
+      console.log(`carts ${productVariant.carts.length}`)
         return productVariant.carts.map(cart => {
             const product = deltas.filter((x: { id: any; }) => x.id === productVariant.id)[0]
-
             return {
                 email: cart.email,
                 url: cart.abandoned_checkout_url,
@@ -53,6 +54,7 @@ export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient 
 
     })
 
+    console.log(emailMatrix)
     const emails: Email[] = ([] as any).concat(... emailMatrix);
     console.log(emails)
     emails.map(email => {
@@ -105,8 +107,12 @@ function sendKlaviyoEvent(email: Email, store: Store) {
       'headers': { }
     };
     request(options, function (error: string | undefined, response: { body: any; }) {
-        if (error) throw new Error(error);
-        console.log(response.body);
+        if (error) {
+          console.log(`error sending klaviyo email ${error}`)
+          throw new Error(error)
+        } else {
+          console.log(`successfully sent email to klaviyo ${store.name} ${email.email}`)
+        }
     });
 }
   
