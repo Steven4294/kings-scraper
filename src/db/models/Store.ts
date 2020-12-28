@@ -11,6 +11,15 @@ export default class Store extends Model<Store> {
     klaviyoAPIKey?: string;
     
     @Column
+    limitPercent?: number;
+
+    @Column
+    limitAmount?: number;
+
+    @Column
+    amountAndPercent?: boolean;
+
+    @Column
     accessToken!: string;
 
     @Column
