@@ -42,6 +42,12 @@ async function main() {
 					})
 				}
 
+				const store = await Store.findOne({
+					where: {
+						id: domain
+					}
+				})
+
 				const oldDic = variants.map(v => {return { id: v.id, price: v.price }})
 				const deltas = oldDic.map(v => {
 				 	const matches = productVariantDic.filter((v2: { id: string; }) => v2.id === v.id)
@@ -51,7 +57,7 @@ async function main() {
 					const oldPrice = parseFloat(v.price);
 
 					const condition = newPrice < oldPrice
-					if (shouldSendKlaviyoEmail(store, newPrice, oldPrice)) {
+					if (shouldSendKlaviyoEmail(store!, newPrice, oldPrice)) {
 						console.log(`PRICE DROP: ${v.id} ${oldPrice} -> ${newPrice}`)
 						return {
 							id: match.id,
@@ -69,11 +75,6 @@ async function main() {
 				}).filter(v => v !== undefined)
 				if (deltas.length === 0) { return }
 
-				const store = await Store.findOne({
-					where: {
-						id: domain
-					}
-				})
 
 				// logic to see if we should send the klaviyo event
 					await quickAddJob( 
