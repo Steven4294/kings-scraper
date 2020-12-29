@@ -50,7 +50,8 @@ async function main() {
 					const newPrice = parseFloat(match.price)
 					const oldPrice = parseFloat(v.price);
 
-					if (newPrice < oldPrice) {
+					const condition = newPrice < oldPrice
+					if (shouldSendKlaviyoEmail(store, newPrice, oldPrice)) {
 						console.log(`PRICE DROP: ${v.id} ${oldPrice} -> ${newPrice}`)
 						return {
 							id: match.id,
@@ -74,15 +75,18 @@ async function main() {
 					}
 				})
 
-				await quickAddJob( 
-				{ connectionString: uri },
-				"sendKlaviyoEvents", // Task identifier
-				{ 
-					payload: {
-						store: store,
-						deltas: deltas,
-					}
-				});
+				// logic to see if we should send the klaviyo event
+					await quickAddJob( 
+						{ connectionString: uri },
+						"sendKlaviyoEvents", // Task identifier
+						{ 
+							payload: {
+								store: store,
+								deltas: deltas,
+							}
+						});
+				
+
             },
             getProducts: getProductsPoll,
             installStore: installStore,
@@ -127,6 +131,21 @@ async function main() {
   // );
 
     }, 1000)
+}
+
+function shouldSendKlaviyoEmail(store: Store, newPrice: number, oldPrice: number) {
+	const diff = Math.abs(newPrice - oldPrice)
+	const percentDiff = (diff / oldPrice) * 100.0
+
+	const b1 = diff > (store.limitAmount ? store.limitAmount : 10)
+	const b2 = percentDiff > (store.limitPercent ? store.limitPercent : 10)
+	if (store.amountAndPercent === true) {
+		// AND
+		return b1 && b2
+	} else {
+		// OR
+		return b1 || b2
+	}
 }
 
 main().catch((err) => {
