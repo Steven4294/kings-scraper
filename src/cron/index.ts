@@ -13,7 +13,7 @@ class job {
         rule.second = 1;
         //rule.minute = 0;
         console.log(`shop referesh called`)
-        schedule.scheduleJob('0 59 * * * *', async () => {
+        schedule.scheduleJob('0 20 * * * *', async () => {
             const stores = await Store.findAll()
             stores.map(async store => {
                 await quickAddJob(
