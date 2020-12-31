@@ -98,17 +98,17 @@ async function main() {
     });
 
 
-    setTimeout(async () => {
+    // setTimeout(async () => {
 
-	const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.myshopify.com', accessToken: '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'})
-	console.log(` >>> SHOULD BE INIT() JOBS <<<`)
-    await quickAddJob(
-        { connectionString: uri },
-        "installStore", // Task identifier
-        { payload: store }, // payload
-    );
+	// const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.myshopify.com', accessToken: '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'})
+	// console.log(` >>> SHOULD BE INIT() JOBS <<<`)
+    // await quickAddJob(
+    //     { connectionString: uri },
+    //     "installStore", // Task identifier
+    //     { payload: store }, // payload
+    // );
 
-    }, 1000)
+    // }, 1000)
 }
 
 function shouldSendKlaviyoEmail(store: Store, newPrice: number, oldPrice: number) {
@@ -125,8 +125,10 @@ function shouldSendKlaviyoEmail(store: Store, newPrice: number, oldPrice: number
 		return b1 || b2
 	}
 }
+
 job.shopRefresh()
-// main().catch((err) => {
-// 	console.error(err);
-//     process.exit(1);
-// });
+
+main().catch((err) => {
+	console.error(err);
+    process.exit(1);
+});
