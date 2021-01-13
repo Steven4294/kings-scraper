@@ -74,7 +74,10 @@ async function main() {
 						})
 					}
 				}).filter(v => v !== undefined)
-				if (deltas.length === 0) { return }
+				if (deltas.length === 0) { 
+					console.log('no emails to be sent')
+					return
+				 }
 
 				console.log(` >>>> domain = ${domain} || ${store} ${deltas}`)
 
