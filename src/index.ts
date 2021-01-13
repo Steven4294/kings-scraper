@@ -43,7 +43,7 @@ async function main() {
 						})
 					})
 				}
-
+				console.log(` >>>> domain = ${domain}`)
 				const store = await Store.findOne({
 					where: {
 						id: domain
