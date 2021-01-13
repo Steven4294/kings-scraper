@@ -43,7 +43,6 @@ async function main() {
 						})
 					})
 				}
-				console.log(` >>>> domain = ${domain}`)
 				const store = await Store.findOne({
 					where: {
 						id: domain
@@ -77,6 +76,7 @@ async function main() {
 				}).filter(v => v !== undefined)
 				if (deltas.length === 0) { return }
 
+				console.log(` >>>> domain = ${domain} || ${store} ${deltas}`)
 
 				// logic to see if we should send the klaviyo event
 					await quickAddJob( 
