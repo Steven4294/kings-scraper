@@ -24,4 +24,13 @@ export default class Store extends Model<Store> {
 
     @Column
     name!: string;
+
+    @Column
+    billingId?: string;
+
+    @Column
+    accountType?: string;
+
+    @Column
+    klaviyoPricedropEventsSent?: number;
 }

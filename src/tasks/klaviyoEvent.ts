@@ -6,7 +6,7 @@ import Cart from "../db/models/Cart";
 const https = require('https');
 const request = require('request');
 
-interface Email {
+export interface Email {
     email: string,
     price_old: string,
     price_new: string,
@@ -100,7 +100,7 @@ async function getProductVariant(id: string): Promise<ProductVariant> {
     return product!
 }
   
-function sendKlaviyoEvent(email: Email, store: Store) {
+export function sendKlaviyoEvent(email: Email, store: Store) {
     var options = {
       'method': 'GET',
       'url': `https://a.klaviyo.com/api/track?data=${getEmailEncoded(email, store)}`,
