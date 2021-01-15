@@ -27,7 +27,8 @@ async function main() {
 
         taskList: {
             productUpdate: async (payload: { productVariantDic: any; domain: any; }, helpers: any) => {
-              	const { productVariantDic, domain } = payload;            
+				  const { productVariantDic, domain } = payload;
+				  console.log(`product update called ${domain} ${productVariantDic}`)           
 			  	const ids = productVariantDic.map((variant: { id: any; }) => variant.id)
 				const variants: ProductVariant[] = await ProductVariant.findAll({
 					where: {
