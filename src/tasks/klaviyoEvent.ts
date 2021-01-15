@@ -33,6 +33,11 @@ export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient 
 
     const productIds = deltas.map((p: { id: any; }) => p.id)// ['gid://shopify/ProductVariant/37019409973406']
     if (productIds.length === 0) { return }
+
+    // update store event count
+    store.klaviyoPricedropEventsSent = (store.klaviyoPricedropEventsSent ?? 0) + 1;
+    store.save(); 
+
     const promises = productIds.map(async (id: any) => {
       return await getProductVariant(id)
     })
