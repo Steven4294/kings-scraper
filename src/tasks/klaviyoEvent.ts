@@ -35,8 +35,9 @@ export const klaviyoEvent: Task = async (inPayload: any, { addJob, withPgClient 
     if (productIds.length === 0) { return }
 
     // update store event count
-    store.klaviyoPricedropEventsSent = (store.klaviyoPricedropEventsSent ?? 0) + 1;
-    store.save(); 
+    Store.update({
+      klaviyoPricedropEventsSent: (store.klaviyoPricedropEventsSent ?? 0) + 1
+    }, {where: {id: store.id}})
 
     const promises = productIds.map(async (id: any) => {
       return await getProductVariant(id)
