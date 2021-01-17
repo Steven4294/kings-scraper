@@ -97,13 +97,17 @@ async function saveCheckouts(checkouts: Checkout[], withPgClient: WithPgClient) 
           return {
             id: checkout.id,
             email: checkout.email,
-            abandoned_checkout_url: checkout.abandoned_checkout_url
+            abandoned_checkout_url: checkout.abandoned_checkout_url,
+            rawJson: 'rawJson'
           }
       }));
   
     await withPgClient((pgClient) => {
-        console.log(`updatets called`)
-        pgClient.query(`insert into "Carts" (id, email, "abandoned_checkout_url", "createdAt", "updatedAt") select a->>'id', a->>'email', a->>'abandoned_checkout_url', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [cartJson])
+      console.log('')
+        console.log(`   [update called]`)
+        console.log('')
+
+        // pgClient.query(`insert into "Carts" ("rawJson", id, email, "abandoned_checkout_url", "createdAt", "updatedAt") select a->>"rawJson", a->>'id', a->>'email', a->>'abandoned_checkout_url', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [cartJson])
 
         return pgClient.query(`insert into "ProductVariantCarts" (cart_id, "productVariant_id", "createdAt", "updatedAt") select a->>'cart_id', a->>'productVariant_id', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [checkoutJoin])
     });

@@ -15,6 +15,9 @@ export default class Cart extends Model implements Cart {
     @Column
     email!: string;
 
+    @Column
+    rawJson?: string;
+
     @BelongsToMany(() => ProductVariant, () => ProductVariantCart)
     products!: ProductVariant[];
 }
