@@ -20,6 +20,7 @@ interface Checkout {
     email: string,
     abandoned_checkout_url: string,
     items: string[],
+    rawJson: string,
 }
 
 export const abandonedCheckoutsTask: Task = async (inPayload: any, { addJob, withPgClient }) => {
@@ -59,6 +60,7 @@ async function getShopifyCheckouts(payload: AbandonedCheckoutPayload, withPgClie
             email: checkout.email,
             abandoned_checkout_url: checkout.abandoned_checkout_url,
             items: items,
+            rawJson: checkout,
         }
     })
 
@@ -93,12 +95,12 @@ async function saveCheckouts(checkouts: Checkout[], withPgClient: WithPgClient) 
         })
       }).flatMap((x: any) => x))
   
-      const cartJson = JSON.stringify(checkouts.map((checkout: { id: any; email: any; abandoned_checkout_url: any; }) => {
+      const cartJson = JSON.stringify(checkouts.map((checkout: { id: any; email: any; abandoned_checkout_url: any; rawJson: any; }) => {
           return {
             id: checkout.id,
             email: checkout.email,
             abandoned_checkout_url: checkout.abandoned_checkout_url,
-            rawJson: 'rawJson'
+            rawJson: checkout.rawJson
           }
       }));
   
@@ -107,7 +109,7 @@ async function saveCheckouts(checkouts: Checkout[], withPgClient: WithPgClient) 
         console.log(`   [update called]`)
         console.log('')
 
-        // pgClient.query(`insert into "Carts" ("rawJson", id, email, "abandoned_checkout_url", "createdAt", "updatedAt") select a->>"rawJson", a->>'id', a->>'email', a->>'abandoned_checkout_url', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [cartJson])
+        pgClient.query(`insert into "Carts" ("rawJson", id, email, "abandoned_checkout_url", "createdAt", "updatedAt") select a->>'rawJson', a->>'id', a->>'email', a->>'abandoned_checkout_url', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [cartJson])
 
         return pgClient.query(`insert into "ProductVariantCarts" (cart_id, "productVariant_id", "createdAt", "updatedAt") select a->>'cart_id', a->>'productVariant_id', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [checkoutJoin])
     });
