@@ -11,6 +11,10 @@ class job {
         const stores = await Store.findAll()
 
         stores.map(async store => {
+            console.log(`-------------`)
+            console.log('install store')
+            console.log(`-------------`)
+
             await quickAddJob(
                 { connectionString: uri },
                 "installStore", // Task identifier
@@ -22,16 +26,15 @@ class job {
         // rule.dayOfWeek = [0, new schedule.Range(0, 6)];
         rule.second = 1;
         //rule.minute = 0;
-        console.log(`shop referesh called`)
-        schedule.scheduleJob('0 0 * * * *', async () => {
-            stores.map(async store => {
-                await quickAddJob(
-                    { connectionString: uri },
-                    "installStore", // Task identifier
-                    { payload: store }, // payload
-                );
-            })
-        });
+        // schedule.scheduleJob('0 0 * * * *', async () => {
+        //     stores.map(async store => {
+        //         await quickAddJob(
+        //             { connectionString: uri },
+        //             "installStore", // Task identifier
+        //             { payload: store }, // payload
+        //         );
+        //     })
+        // });
     }
 }
 
