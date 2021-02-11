@@ -8,13 +8,20 @@ class job {
     constructor() { }
 
     public async  shopRefresh()  {
+        await this.delay(1000)
+
         const stores = await Store.findAll()
+
 
         stores.map(async store => {
             console.log(`-------------`)
             console.log('install store')
             console.log(`-------------`)
-
+            console.log(`payload ${store.name}`)
+            await quickAddJob(
+                { connectionString: uri },
+                "helloWorld", // Task identifier
+            );
             await quickAddJob(
                 { connectionString: uri },
                 "installStore", // Task identifier
@@ -35,6 +42,10 @@ class job {
         //         );
         //     })
         // });
+    }
+
+    async delay(ms: number) {
+        await new Promise(resolve => setTimeout(()=>resolve({}), ms)).then(()=>console.log("fired"));
     }
 }
 

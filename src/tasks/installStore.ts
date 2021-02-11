@@ -41,10 +41,12 @@ mutation {
 }`
 
 export const installStore: Task = async (inPayload: any, { addJob, withPgClient }) => {
+  console.log(`~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`)
+  console.log(`~~~~ running install store ~~~~`)
+  console.log(`~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`)
+
     const store: Store = inPayload['payload'] as any;
-    console.log(`~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`)
-    console.log(`~~~~ running install store ~~~~`)
-    console.log(`~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`)
+  console.log(inPayload)
 
     getProductVariants(store)
 

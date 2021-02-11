@@ -54,7 +54,7 @@ async function getShopifyCheckouts(payload: AbandonedCheckoutPayload, withPgClie
             "id": `gid://shopify/ProductVariant/${item["variant_id"]}`
           }
         })
-        console.log(items)
+
         return {
             id: checkout.id,
             email: checkout.email,

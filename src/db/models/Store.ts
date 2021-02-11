@@ -32,5 +32,8 @@ export default class Store extends Model<Store> {
     accountType?: string;
 
     @Column
+    enabled?: boolean;
+
+    @Column
     klaviyoPricedropEventsSent?: number;
 }

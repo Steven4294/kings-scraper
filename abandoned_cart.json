@@ -30,8 +30,7 @@
                 "presentment_title": "Fjord Winter Boots",
                 "presentment_variant_title": "Army Green / 10.5",
                 "price": 119.99,
-                "product": [
-                    {
+                "product": {
                         "body_html": "<p><img src=https://cdn.shopify.com/s/files/1/04...",
                         "handle": "bjorn-winter-boots",
                         "id": 6148825448600,
@@ -107,8 +106,7 @@
                             "Shoe Size": "10.5"
                         },
                         "vendor": "ExploreWorkPlay"
-                    }
-                ],
+                },
                 "product_id": 6148825448600,
                 "properties": [],
                 "quantity": 1,

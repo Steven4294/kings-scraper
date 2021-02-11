@@ -4,12 +4,14 @@ import { sequelize } from './db'
 import { getProductsPoll } from './tasks/getProductsPoll'
 import { installStore } from './tasks/installStore';
 import Store from './db/models/Store'
+import Cart from './db/models/Cart'
 import { klaviyoEvent } from './tasks/klaviyoEvent';
 import ProductVariant from './db/models/ProductVariant';
 import { abandonedCheckoutsTask } from './tasks/abandonedCheckouts';
 const { run, quickAddJob } = require("graphile-worker");
 import job from './cron'
 import { klaviyoPing } from './tasks/klaviyoPing';
+import { klaviyoAbandonedCartJsonForCart } from './helpers'
 
 const uri = 'postgres://edwfxtxadowqjw:3dc337268b226f9b4ee934a5c817c3a5e9517c65ea07779a6438f63f92a53d8b@ec2-54-158-190-214.compute-1.amazonaws.com:5432/dajno1b88amgs9?ssl=no-verify'
 
@@ -28,7 +30,7 @@ async function main() {
         taskList: {
             productUpdate: async (payload: { productVariantDic: any; domain: any; }, helpers: any) => {
 				  const { productVariantDic, domain } = payload;
-				  console.log(`product update called ${domain} ${productVariantDic}`)           
+				  console.log(`${JSON.stringify(productVariantDic)}`)           
 			  	const ids = productVariantDic.map((variant: { id: any; }) => variant.id)
 				const variants: ProductVariant[] = await ProductVariant.findAll({
 					where: {
@@ -58,7 +60,7 @@ async function main() {
 					const newPrice = parseFloat(match.price)
 					const oldPrice = parseFloat(v.price);
 
-					const condition = newPrice < oldPrice
+					console.log(` ${oldPrice} -> ${newPrice}`)
 					if (shouldSendKlaviyoEmail(store!, newPrice, oldPrice)) {
 						console.log(`PRICE DROP: ${v.id} ${oldPrice} -> ${newPrice}`)
 						return {
@@ -99,7 +101,12 @@ async function main() {
             installStore: installStore,
 			sendKlaviyoEvents: klaviyoEvent,
 			klaviyoPing: klaviyoPing,
-			abandonedCheckouts: abandonedCheckoutsTask
+			abandonedCheckouts: abandonedCheckoutsTask,
+			helloWorld: async () => {
+				console.log('')
+				console.log('hello world is called!!!')
+				console.log('')
+			}
         }
     });
 
@@ -128,12 +135,39 @@ async function main() {
     // }, 1000)
 }
 
+async function testKlaviyoJson() {
+	// const product = await ProductVariant.findOne({
+	// 	where: {
+	// 	  id: id
+	// 	},
+	// 	  include: [{
+	// 	  model: Cart,
+	// 	  as: 'carts',
+	// 	  required: false,
+	// 	  attributes: ['id', 'email', 'abandoned_checkout_url'],
+	// 	}]
+	//   })
+
+	// const carts = await Cart.findAll({
+	// 	include: [{
+	// 		model: ProductVariant,
+	// 		as: 'products'
+	// 	}]
+	// });
+	// const cart = carts[0]
+	// const klaviyo = klaviyoAbandonedCartJsonForCart(cart)
+	
+	// console.log(klaviyo.extra.line_items)
+}
+
 function shouldSendKlaviyoEmail(store: Store, newPrice: number, oldPrice: number) {
 	const diff = Math.abs(newPrice - oldPrice)
 	const percentDiff = (diff / oldPrice) * 100.0
 
-	const b1 = diff >= (store.limitAmount ? store.limitAmount : 10)
-	const b2 = percentDiff >= (store.limitPercent ? store.limitPercent : 10)
+	const b1 = diff >= (store.limitAmount ?? 10)
+	const b2 = percentDiff >= (store.limitPercent ?? 10)
+
+	console.log(`b1: ${b1},  b2: ${b2}   percent ${percentDiff}`)
 	if (store.amountAndPercent === true) {
 		// AND
 		return b1 && b2
@@ -143,9 +177,12 @@ function shouldSendKlaviyoEmail(store: Store, newPrice: number, oldPrice: number
 	}
 }
 
-job.shopRefresh()
+testKlaviyoJson()
 
 main().catch((err) => {
 	console.error(err);
     process.exit(1);
-});
+}).then(() => {
+	// job.shopRefresh()
+})
+
