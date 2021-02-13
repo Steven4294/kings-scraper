@@ -36,4 +36,7 @@ export default class Store extends Model<Store> {
 
     @Column
     klaviyoPricedropEventsSent?: number;
+
+    @Column
+    apiKeySynced?: boolean;
 }

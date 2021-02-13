@@ -50,11 +50,11 @@ export const installStore: Task = async (inPayload: any, { addJob, withPgClient 
 
     getProductVariants(store)
 
-    await quickAddJob(
-        { connectionString: uri },
-        "abandonedCheckouts", // Task identifier
-        { store: store }, // payload
-    );
+    // await quickAddJob(
+    //     { connectionString: uri },
+    //     "abandonedCheckouts", // Task identifier
+    //     { store: store }, // payload
+    // );
 };
 
 async function getProductVariants(store: Store) {

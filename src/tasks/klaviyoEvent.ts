@@ -160,7 +160,7 @@ async function getProductVariant(id: string): Promise<ProductVariant> {
     return product!
 }
   
-export async function sendKlaviyoEvent(email: Email, store: Store) {
+export async function sendKlaviyoEvent(email: Email, store: Store, ping: Boolean = false) {
   const data = await getEmailEncoded(email, store)
     var options = {
       'method': 'GET',
@@ -169,12 +169,19 @@ export async function sendKlaviyoEvent(email: Email, store: Store) {
     };
 
     request(options, function (error: string | undefined, response: { body: any; }) {
-        if (error) {
-          console.log(`error sending klaviyo email ${error}`)
-          throw new Error(error)
-        } else {
-          console.log(`successfully sent email to klaviyo ${store.name} ${email.email}`)
+
+
+      if (ping === true) {
+        const success = response.body === '1'
+
+          Store.update({
+            apiKeySynced: success
+        }, {
+          where: {
+            id: store.id
         }
+      }) 
+      }
     });
 }
   

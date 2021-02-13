@@ -54,6 +54,12 @@ export const getProductsPoll: Task = async (inPayload: any, { addJob, withPgClie
     } else {
         const url = data.currentBulkOperation.url
         downloadJSONL(url, withPgClient)
+
+        await quickAddJob(
+            { connectionString: uri },
+            "abandonedCheckouts", // Task identifier
+            { store: store }, // payload
+        );
     }
 };
 
