@@ -54,7 +54,7 @@ export const getProductsPoll: Task = async (inPayload: any, { addJob, withPgClie
     } else {
         const url = data.currentBulkOperation.url
         downloadJSONL(url, withPgClient)
-
+        delay(5000)
         await quickAddJob(
             { connectionString: uri },
             "abandonedCheckouts", // Task identifier
@@ -82,6 +82,10 @@ function downloadJSONL(url: any, withPgClient: WithPgClient) {
     })
 }
 
+async function delay(ms: number) {
+    await new Promise(resolve => setTimeout(()=>resolve({}), ms)).then(()=>console.log("fired"));
+  }
+
 const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.myshopify.com', accessToken: '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'})
 
 // TODO: fix
@@ -89,12 +93,13 @@ const store: Store = new Store({id: 'zeiger-5.myshopify.com', name: 'zeiger-5.my
 // at writeAfterEnd (_stream_writable.js:243:12)
 // at JsonlParser.Writable.write (_stream_writable.js:291:5)
 async function saveData(data: string, withPgClient: WithPgClient) {
-    await withPgClient((pgClient) => {
+    await withPgClient(async (pgClient) => {
         console.log(` ~~~~~ `)
         console.log(` SAVING PRODUCT VARIANTS`)
         console.log(` ~~~~~ `)
 
-        return pgClient.query(`insert into "ProductVariants" (id, price, "imgSrc", "title", "handle", "createdAt", "updatedAt") select a->>'id', a->>'price', a#>>'{product,featuredImage,originalSrc}', a#>>'{product,title}', a#>>'{product,handle}', now(), now() from json_array_elements($1::json) a on conflict (id) do update set price = excluded.price, "updatedAt" = now(), "imgSrc" = excluded."imgSrc"`, [data])}
+        await pgClient.query(`insert into "ProductVariants" (id, price, "imgSrc", "title", "handle", "createdAt", "updatedAt") select a->>'id', a->>'price', a#>>'{product,featuredImage,originalSrc}', a#>>'{product,title}', a#>>'{product,handle}', now(), now() from json_array_elements($1::json) a on conflict (id) do update set price = excluded.price, "updatedAt" = now(), "imgSrc" = excluded."imgSrc"`, [data])}
+        
     );
 }
 

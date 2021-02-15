@@ -108,7 +108,7 @@ async function saveCheckouts(checkouts: Checkout[], withPgClient: WithPgClient) 
       }));
   
     await withPgClient(async (pgClient) => {
-      console.log('')
+        console.log('')
         console.log(`   [update called]`)
         console.log('')
 
