@@ -54,7 +54,8 @@ export const getProductsPoll: Task = async (inPayload: any, { addJob, withPgClie
     } else {
         const url = data.currentBulkOperation.url
         downloadJSONL(url, withPgClient)
-        delay(5000)
+        delay(15000)
+        console.log(` >>>>> callign abd checkouts`)
         await quickAddJob(
             { connectionString: uri },
             "abandonedCheckouts", // Task identifier
