@@ -54,7 +54,7 @@ export const getProductsPoll: Task = async (inPayload: any, { addJob, withPgClie
     } else {
         const url = data.currentBulkOperation.url
         downloadJSONL(url, withPgClient)
-        delay(15000)
+        await delay(15000)
         console.log(` >>>>> callign abd checkouts`)
         await quickAddJob(
             { connectionString: uri },
