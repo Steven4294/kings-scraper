@@ -84,6 +84,9 @@ async function getShopifyCheckouts(payload: AbandonedCheckoutPayload, withPgClie
         // no more checkouts
     }
 }
+async function delay(ms: number) {
+  await new Promise(resolve => setTimeout(()=>resolve({}), ms)).then(()=>console.log("fired"));
+}
 
 async function saveCheckouts(checkouts: Checkout[], withPgClient: WithPgClient) {
       const checkoutJoin = JSON.stringify(checkouts.map((checkout: { items: any[]; id: any; }) => {
@@ -110,7 +113,7 @@ async function saveCheckouts(checkouts: Checkout[], withPgClient: WithPgClient) 
         console.log('')
 
         await pgClient.query(`insert into "Carts" ("rawJson", id, email, "abandoned_checkout_url", "createdAt", "updatedAt") select a->>'rawJson', a->>'id', a->>'email', a->>'abandoned_checkout_url', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [cartJson])
-
+        await delay(1000);
         return pgClient.query(`insert into "ProductVariantCarts" (cart_id, "productVariant_id", "createdAt", "updatedAt") select a->>'cart_id', a->>'productVariant_id', now(), now() from json_array_elements($1::json) a on conflict do nothing`, [checkoutJoin])
     });
 }
