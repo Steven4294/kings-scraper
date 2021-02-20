@@ -8,6 +8,8 @@ var webdriver = require('selenium-webdriver');
 const {Builder, By, Key, until} = require('selenium-webdriver');
 import job from './cron'
 const chrome = require('selenium-webdriver/chrome');
+import * as schedule from "node-schedule";
+const request = require('request')
 
 let options = new chrome.Options();
 options.setChromeBinaryPath(process.env.CHROME_BINARY_PATH);
@@ -85,10 +87,21 @@ async function helloWorld() {
 	const results = await getTables_v2()
 	// await getTables()
 
+	var options = {
+		'method': 'POST',
+		'url': 'https://zeiger-whalewatcher.herokuapp.com/message',
+		'headers': {
+		  'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({"message":`${results}`})  
+	};
+	request(options);
+
+	  
     // await driver.findElement(By.name('q')).sendKeys('webdriver', Key.RETURN);
     // await driver.wait(until.titleIs('webdriver - Google Search'), 1000);
     } finally {
-    
+		
 	}
 }
 
@@ -174,12 +187,16 @@ function getScreennames(): Promise<String[]> {
 
 }
 
-helloWorld()
+
+
+
 
 main().catch((err) => {
 	console.error(err);
     process.exit(1);
 }).then(() => {
-	job.runJob()
+	schedule.scheduleJob('* * * * *', async () => {
+		helloWorld()
+	});
 })
 
