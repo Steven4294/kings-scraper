@@ -16,9 +16,9 @@ options.setChromeBinaryPath(process.env.CHROME_BINARY_PATH);
 let serviceBuilder = new chrome.ServiceBuilder(process.env.CHROME_DRIVER_PATH);
 
 //Don't forget to add these for heroku
-options.addArguments("--headless");
-options.addArguments("--disable-gpu");
-options.addArguments("--no-sandbox");
+// options.addArguments("--headless");
+// options.addArguments("--disable-gpu");
+// options.addArguments("--no-sandbox");
 
 
 let driver = new webdriver.Builder()
@@ -69,16 +69,7 @@ function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-async function helloWorld() {
-  try {
-	await driver.get(url);
-	await driver.findElement(By.xpath('/html/body/div[19]/div[1]/div/input[1]')).sendKeys(username)
-	await driver.findElement(By.xpath('/html/body/div[19]/div[1]/div/input[2]')).sendKeys(password, Key.RETURN)
-	await delay(500)
-	const playButton = await driver.findElement(By.xpath('/html/body/div[21]/div[1]/div/span[2]'))
-	await delay(500)
-	playButton.click()
-	// await delay(2000)
+async function scrapeKings() {
 	const closeButton = await driver.findElement(By.xpath('/html/body/div[6]/div[3]/span'))
 	// await delay(2000)
 	closeButton.click()
@@ -96,6 +87,17 @@ async function helloWorld() {
 		body: JSON.stringify({"message":`${results}`})  
 	};
 	request(options);
+}
+
+async function loadKings() {
+  try {
+	await driver.get(url);
+	await driver.findElement(By.xpath('/html/body/div[19]/div[1]/div/input[1]')).sendKeys(username)
+	await driver.findElement(By.xpath('/html/body/div[19]/div[1]/div/input[2]')).sendKeys(password, Key.RETURN)
+	await delay(500)
+	const playButton = await driver.findElement(By.xpath('/html/body/div[21]/div[1]/div/span[2]'))
+	await delay(500)
+	playButton.click()
 
 	  
     // await driver.findElement(By.name('q')).sendKeys('webdriver', Key.RETURN);
@@ -134,30 +136,18 @@ async function getTables_v2() {
 }
 
 async function getTable(index: number, isFirst = false): Promise<String[]> {
-	await driver.findElement(By.xpath(`/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
-	if (isFirst) {
-		await delay(1200)
-	} else { await delay(400) }
-	await driver.findElement(By.xpath(`/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
-	await delay(100)
-	await driver.findElement(By.xpath(`/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
+	try {
+		await delay(1000)
+		await driver.findElement(By.xpath(`/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
+		if (isFirst) {
+			await delay(1200)
+		} else { await delay(1000) }
+		
+		await driver.findElement(By.xpath(`/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
+	
+	} finally { }
 
 	return getScreennames()
-}
-
-async function getTables() {
-	// const arr = Array.from({length: 10}, (_, i) => i + 1) // [1, 2, .., N]
-	// const promises = arr.map(async n => {
-	// 	await getTable(n)
-	// })
-	// await Promise.all(promises)
-	const r1 = await getTable(1)
-	await getTable(2)
-	await getTable(3)
-	await getTable(4)
-	await getTable(5)
-	await getTable(6)
-
 }
 
 function getScreennames(): Promise<String[]> {
@@ -170,7 +160,7 @@ function getScreennames(): Promise<String[]> {
 		const x5 = '/html/body/div[14]/div[7]/div[2]/div[2]/div/div[1]/div[5]/span[1]'
 		const x6 = '/html/body/div[14]/div[7]/div[2]/div[2]/div/div[1]/div[6]/span[1]'
 		const x7 = '/html/body/div[14]/div[7]/div[2]/div[2]/div/div[1]/div[7]/span[1]'
-		const arr = [x1, x2, x3, x4, x5, x6, x7]
+		const arr = [x1, x2 , x3, x4, x5, x6, x7]
 
 		arr.map(async xpath => {
 		try {
@@ -178,25 +168,20 @@ function getScreennames(): Promise<String[]> {
 			const text = await elem.getText()
 			results.push(text)
 		} finally {
+			resolve(results)
 		}
 		})
 		resolve(results)
-
 	});
-
-
 }
-
-
-
-
 
 main().catch((err) => {
 	console.error(err);
     process.exit(1);
-}).then(() => {
+}).then(async () => {
+	await loadKings()
+
 	schedule.scheduleJob('* * * * *', async () => {
-		helloWorld()
+		await scrapeKings()
 	});
 })
-
