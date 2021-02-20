@@ -7,9 +7,28 @@ require('chromedriver');
 var webdriver = require('selenium-webdriver');
 const {Builder, By, Key, until} = require('selenium-webdriver');
 import job from './cron'
-var driver = new webdriver.Builder()
-  .forBrowser('chrome')
-  .build();
+const chrome = require('selenium-webdriver/chrome');
+
+let options = new chrome.Options();
+options.setChromeBinaryPath(process.env.CHROME_BINARY_PATH);
+let serviceBuilder = new chrome.ServiceBuilder(process.env.CHROME_DRIVER_PATH);
+
+//Don't forget to add these for heroku
+options.addArguments("--headless");
+options.addArguments("--disable-gpu");
+options.addArguments("--no-sandbox");
+
+
+let driver = new webdriver.Builder()
+	.forBrowser('chrome')
+	.setChromeOptions(options)
+	.setChromeService(serviceBuilder)
+	.build();
+
+
+// var driver = new webdriver.Builder()
+//   .forBrowser('chrome')
+//   .build();
 
 
 // const uri = 'postgres://edwfxtxadowqjw:3dc337268b226f9b4ee934a5c817c3a5e9517c65ea07779a6438f63f92a53d8b@ec2-54-158-190-214.compute-1.amazonaws.com:5432/dajno1b88amgs9?ssl=no-verify'
@@ -155,7 +174,7 @@ function getScreennames(): Promise<String[]> {
 
 }
 
-//helloWorld()
+helloWorld()
 
 main().catch((err) => {
 	console.error(err);
