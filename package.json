@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "nodemon",
+    "start:dev": "nodemon -x",
+    "start:prod": "nodemon -x 'node build/index.js || touch build/index.js'",
     "tsc": "tsc",
     "build": "tsc",
     "start": "npm run build && node build/index.js"
