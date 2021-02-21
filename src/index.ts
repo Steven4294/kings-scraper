@@ -152,9 +152,8 @@ async function getTables_v2() {
 	const r12 = await getTable(12)
 	const r13 = await getTable(13)
 	const r14 = await getTable(14)
-	const r15 = await getTable(15)
-
-	const arrs = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15]
+	const arrs = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14]
+	
 	arrs.map(elem => {
 		results = results.concat(elem)
 	})
@@ -213,7 +212,7 @@ main().catch((err) => {
 }).then(async () => {
 	await scrapeSite()
 
-	schedule.scheduleJob("*/40 * * * * *", async () => {
+	schedule.scheduleJob("*/51 * * * * *", async () => {
 		//every 40 seconds
 		await scrapeKings()
 	});
