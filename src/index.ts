@@ -146,8 +146,15 @@ async function getTables_v2() {
 	const r6 = await getTable(6)
 	const r7 = await getTable(7)
 	const r8 = await getTable(8)
+	const r9 = await getTable(9)
+	const r10 = await getTable(10)
+	const r11 = await getTable(11)
+	const r12 = await getTable(12)
+	const r13 = await getTable(13)
+	const r14 = await getTable(14)
+	const r15 = await getTable(15)
 
-	const arrs = [r1, r2, r3, r4, r5, r6, r7, r8]
+	const arrs = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15]
 	arrs.map(elem => {
 		results = results.concat(elem)
 	})
