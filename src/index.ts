@@ -68,16 +68,26 @@ const base = 'https://zeiger-whalewatcher.herokuapp.com'
 // const base = 'http://127.0.0.1:8080'
 const post_url = `${base}/message`
 
+// const config = {
+// 	site: 'https://www.crashpkr.com/',
+// 	username: 'YeetIN',
+// 	password: '123',
+// 	type: 'Crash',
+// }
+
+const config = {
+	site: 'https://kingsclubpkr.com/',
+	username: 'Manny R',
+	password: '123',
+ 	type: 'Kings',
+}
 
 function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
 async function scrapeKings() {
-	const closeButton = await driver.findElement(By.xpath('/html/body/div[6]/div[3]/span'))
-	// await delay(2000)
-	closeButton.click()
-	 await delay(200)
+
 
 	const results = await getTables_v2()
 	// await getTables()
@@ -88,28 +98,37 @@ async function scrapeKings() {
 		'headers': {
 		  'Content-Type': 'application/json'
 		},
-		body: JSON.stringify({"message":`${results}`})  
+		body: JSON.stringify({"message":`${results}`, "type":`${config.type}`})  
 	};
 	request(options);
 }
 
-async function loadKings() {
-  try {
-	await driver.get(url);
-	await driver.findElement(By.xpath('/html/body/div[19]/div[1]/div/input[1]')).sendKeys(username)
-	await driver.findElement(By.xpath('/html/body/div[19]/div[1]/div/input[2]')).sendKeys(password, Key.RETURN)
-	await delay(500)
-	const playButton = await driver.findElement(By.xpath('/html/body/div[21]/div[1]/div/span[2]'))
-	await delay(500)
-	playButton.click()
+async function scrapeSite() {
+	try {
+	  await driver.get(config.site);
+	  await driver.findElement(By.xpath('/html/body/div[19]/div[1]/div/input[1]')).sendKeys(config.username)
+	  await driver.findElement(By.xpath('/html/body/div[19]/div[1]/div/input[2]')).sendKeys(config.password, Key.RETURN)
 
-	  
-    // await driver.findElement(By.name('q')).sendKeys('webdriver', Key.RETURN);
-    // await driver.wait(until.titleIs('webdriver - Google Search'), 1000);
-    } finally {
-		
-	}
-}
+	  if (config.type === 'Kings') {
+		await delay(500)
+		const playButton = await driver.findElement(By.xpath('/html/body/div[21]/div[1]/div/span[2]'))
+		await delay(500)
+		playButton.click()
+	  }
+
+	  await delay(200)
+
+	  const closeButton = await driver.findElement(By.xpath('/html/body/div[6]/div[3]/span'))
+	  // await delay(2000)
+	  closeButton.click()
+	   await delay(200)
+
+  
+	  } finally {
+		  
+	  }
+  }
+
 
 async function getTables_v2() {
 
@@ -185,7 +204,7 @@ main().catch((err) => {
 	console.error(err);
     process.exit(1);
 }).then(async () => {
-	await loadKings()
+	await scrapeSite()
 
 	schedule.scheduleJob("*/40 * * * * *", async () => {
 		//every 40 seconds
