@@ -187,7 +187,8 @@ main().catch((err) => {
 }).then(async () => {
 	await loadKings()
 
-	schedule.scheduleJob('* * * * *', async () => {
+	schedule.scheduleJob("*/40 * * * * *", async () => {
+		//every 40 seconds
 		await scrapeKings()
 	});
 })
