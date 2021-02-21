@@ -64,6 +64,10 @@ async function main() {
 const username = 'Eugene L'
 const password = '123'
 const url = 'https://kingsclubpkr.com/'
+const base = 'https://zeiger-whalewatcher.herokuapp.com'
+// const base = 'http://127.0.0.1:8080'
+const post_url = `${base}/message`
+
 
 function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
@@ -80,7 +84,7 @@ async function scrapeKings() {
 
 	var options = {
 		'method': 'POST',
-		'url': 'https://zeiger-whalewatcher.herokuapp.com/message',
+		'url': post_url,
 		'headers': {
 		  'Content-Type': 'application/json'
 		},
@@ -109,11 +113,11 @@ async function loadKings() {
 
 async function getTables_v2() {
 
-	const arr = Array.from({length: 10}, (_, i) => i + 1) // [1, 2, .., N]
-	arr.map(async r => {
-		await delay(1000)
-		console.log('test mcgee')
-	})
+	// const arr = Array.from({length: 10}, (_, i) => i + 1) // [1, 2, .., N]
+	// arr.map(async r => {
+	// 	await delay(1000)
+	// 	console.log('test mcgee')
+	// })
 	var results: String[] = []
 	const r1 = await getTable(1, true)
 	const r2 = await getTable(2)
@@ -137,14 +141,15 @@ async function getTables_v2() {
 
 async function getTable(index: number, isFirst = false): Promise<String[]> {
 	try {
-		await delay(1000)
+		await driver.findElement(By.xpath(`/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
+		await delay(300)
 		await driver.findElement(By.xpath(`/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
 		if (isFirst) {
 			await delay(1200)
 		} else { await delay(1000) }
 		
 		await driver.findElement(By.xpath(`/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
-	
+		await delay(300)
 	} finally { }
 
 	return getScreennames()
@@ -153,6 +158,7 @@ async function getTable(index: number, isFirst = false): Promise<String[]> {
 function getScreennames(): Promise<String[]> {
 	return new Promise<String[]>((resolve, reject) => {
 		const results: String[] = []
+
 		const x1 = '/html/body/div[14]/div[7]/div[2]/div[2]/div/div[1]/div[1]/span[1]'
 		const x2 = '/html/body/div[14]/div[7]/div[2]/div[2]/div/div[1]/div[2]/span[1]'
 		const x3 = '/html/body/div[14]/div[7]/div[2]/div[2]/div/div[1]/div[3]/span[1]'
