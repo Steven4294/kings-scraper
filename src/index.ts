@@ -72,19 +72,19 @@ const base = 'https://zeiger-whalewatcher.herokuapp.com'
 // const base = 'http://127.0.0.1:8080'
 const post_url = `${base}/message`
 
-// const config = {
-// 	site: 'https://www.crashpkr.com/',
-// 	username: 'YeetIN',
-// 	password: '123',
-// 	type: 'Crash',
-// }
-
 const config = {
-	site: 'https://kingsclubpkr.com/',
-	username:  'Manny R',
+	site: 'https://www.crashpkr.com/',
+	username: 'YeetIN',
 	password: '123',
- 	type: 'Kings',
+	type: 'Crash',
 }
+
+// const config = {
+// 	site: 'https://kingsclubpkr.com/',
+// 	username:  'Manny R',
+// 	password: '123',
+//  	type: 'Kings',
+// }
 
 function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
