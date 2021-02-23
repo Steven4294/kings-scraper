@@ -19,7 +19,11 @@ let serviceBuilder = new chrome.ServiceBuilder(process.env.CHROME_DRIVER_PATH);
 // options.addArguments("--headless");
 // options.addArguments("--disable-gpu");
 // options.addArguments("--no-sandbox");
-
+interface Player {
+	name: String,
+	table: String,
+	stakes: String,
+}
 
 let driver = new webdriver.Builder()
 	.forBrowser('chrome')
@@ -68,19 +72,19 @@ const base = 'https://zeiger-whalewatcher.herokuapp.com'
 // const base = 'http://127.0.0.1:8080'
 const post_url = `${base}/message`
 
-const config = {
-	site: 'https://www.crashpkr.com/',
-	username: 'YeetIN',
-	password: '123',
-	type: 'Crash',
-}
-
 // const config = {
-// 	site: 'https://kingsclubpkr.com/',
-// 	username: 'Manny R',
+// 	site: 'https://www.crashpkr.com/',
+// 	username: 'YeetIN',
 // 	password: '123',
-//  	type: 'Kings',
+// 	type: 'Crash',
 // }
+
+const config = {
+	site: 'https://kingsclubpkr.com/',
+	username:  'Manny R',
+	password: '123',
+ 	type: 'Kings',
+}
 
 function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
@@ -91,14 +95,14 @@ async function scrapeKings() {
 
 	const results = await getTables_v2()
 	// await getTables()
-
+	console.log(results)
 	var options = {
 		'method': 'POST',
 		'url': post_url,
 		'headers': {
 		  'Content-Type': 'application/json'
 		},
-		body: JSON.stringify({"message":`${results}`, "type":`${config.type}`})  
+		body: JSON.stringify({"players":results, "type":`${config.type}`})  
 	};
 	request(options);
 }
@@ -137,7 +141,7 @@ async function getTables_v2() {
 	// 	await delay(1000)
 	// 	console.log('test mcgee')
 	// })
-	var results: String[] = []
+	var results: Player[] = []
 	const r1 = await getTable(1, true)
 	const r2 = await getTable(2)
 	const r3 = await getTable(3)
@@ -159,12 +163,12 @@ async function getTables_v2() {
 	})
 	console.log(`~~~~~~~~`)
 	console.log(results)
-	return new Promise<String[]>((resolve, reject) => {
+	return new Promise<Player[]>((resolve, reject) => {
 		resolve(results)
 	})
 }
 
-async function getTable(index: number, isFirst = false): Promise<String[]> {
+async function getTable(index: number, isFirst = false): Promise<Player[]> {
 	try {
 		await driver.findElement(By.xpath(`/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
 		await delay(300)
@@ -177,12 +181,17 @@ async function getTable(index: number, isFirst = false): Promise<String[]> {
 		await delay(300)
 	} finally { }
 
-	return getScreennames()
+	const xpath_stakes =  `/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[2]`
+	const xpath_table =   `/html/body/div[14]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`
+	const stakes =  await driver.findElement(By.xpath(xpath_stakes)).getText()
+	const table =  await driver.findElement(By.xpath(xpath_table)).getText()
+
+	return getScreennames(stakes, table)
 }
 
-function getScreennames(): Promise<String[]> {
-	return new Promise<String[]>((resolve, reject) => {
-		const results: String[] = []
+function getScreennames(stakes: String, table: String): Promise<Player[]> {
+	return new Promise<Player[]>((resolve, reject) => {
+		const results: Player[] = []
 
 		const x1 = '/html/body/div[14]/div[7]/div[2]/div[2]/div/div[1]/div[1]/span[1]'
 		const x2 = '/html/body/div[14]/div[7]/div[2]/div[2]/div/div[1]/div[2]/span[1]'
@@ -196,8 +205,12 @@ function getScreennames(): Promise<String[]> {
 		arr.map(async xpath => {
 		try {
 			const elem = await driver.findElement(By.xpath(xpath))
-			const text = await elem.getText()
-			results.push(text)
+			const name = await elem.getText()
+			results.push({
+				name: name,
+				stakes: stakes,
+				table: table,
+			})
 		} finally {
 			resolve(results)
 		}
