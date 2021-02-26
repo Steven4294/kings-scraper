@@ -225,8 +225,9 @@ main().catch((err) => {
 }).then(async () => {
 	await scrapeSite()
 
-	schedule.scheduleJob("*/51 * * * * *", async () => {
+	schedule.scheduleJob("*/30 * * * * *", async () => {
 		//every 40 seconds
-		await scrapeKings()
+		console.log('calling scrape kings')
+		scrapeKings()
 	});
 })
