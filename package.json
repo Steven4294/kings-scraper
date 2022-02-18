@@ -26,10 +26,10 @@
   "dependencies": {
     "@babel/polyfill": "^7.12.1",
     "@types/bluebird": "^3.5.33",
-    "@types/chromedriver": "^81.0.0",
+    "@types/chromedriver": "^81.0.1",
     "@types/node-schedule": "^1.3.1",
     "@types/validator": "^13.1.0",
-    "chromedriver": "^88.0.0",
+    "chromedriver": "^98.0.0",
     "graphile-worker": "^0.8.1",
     "graphql": "^15.4.0",
     "graphql-request": "^3.3.0",
