@@ -10,6 +10,7 @@ import job from './cron'
 const chrome = require('selenium-webdriver/chrome');
 import * as schedule from "node-schedule";
 const request = require('request')
+const proxy = require('selenium-webdriver/proxy');
 
 let options = new chrome.Options();
 options.setChromeBinaryPath(process.env.CHROME_BINARY_PATH);
@@ -19,6 +20,8 @@ let serviceBuilder = new chrome.ServiceBuilder(process.env.CHROME_DRIVER_PATH);
 options.addArguments("--headless");
 options.addArguments("--disable-gpu");
 options.addArguments("--no-sandbox");
+// const proxy = 'fixie:SeN2772qjHvGkaR@velodrome.usefixie.com:80'
+// options.addArguments(`--proxy-server=https://${proxy}`)
 
 
 let driver = new webdriver.Builder()
@@ -27,10 +30,20 @@ let driver = new webdriver.Builder()
 	.setChromeService(serviceBuilder)
 	.build();
 
-async function main() {
  
+
+async function main() {
+
  
 }
+// a sid: ACb63a2c5452d7cb241482a3fcb27e21c1
+// auth: 823fd52afe70888c39873c2286d0eff3
+
+// curl 'https://api.twilio.com/2010-04-01/Accounts/ACb63a2c5452d7cb241482a3fcb27e21c1/Messages.json' -X POST \
+// --data-urlencode 'To=+14016880688' \
+// --data-urlencode 'MessagingServiceSid=MGbabec57d878f8deb97ff98f31ea8188c' \
+// --data-urlencode 'Body=test' \
+// -u ACb63a2c5452d7cb241482a3fcb27e21c1:823fd52afe70888c39873c2286d0eff3
 
 interface WhaleWatcherPlayer {
 	name: String
@@ -39,7 +52,15 @@ interface WhaleWatcherPlayer {
 }
 
 
-const username = 'JohnT1'
+function getRandomInt(max: number) {
+	return Math.floor(Math.random() * max);
+}
+
+const arr = ['JohnA1', 'JohnC1', 'JohnT1', 'JohnE1', 'JohnF1', 'JohnG2']
+
+const n = getRandomInt(5)
+const username = arr[n]
+console.log(username)
 const password = 'pw'
 const url = 'https://kingsclubpkr.com/'
 const base = 'https://zeiger-whalewatcher.herokuapp.com'
@@ -79,7 +100,11 @@ async function scrapeKings(initial: boolean) {
 
 async function loadKings() {
   try {
+
+
 	await driver.get(url);
+	 
+
 	await delay(3500)
 // /html/body/div[18]/div[1]/div/input[1]
 	await driver.findElement(By.xpath('/html/body/div[18]/div[1]/div/input[1]')).sendKeys(username)
@@ -114,8 +139,10 @@ async function getTables_v2() {
 	const r6 = await getTable(6)
 	const r7 = await getTable(7)
 	const r8 = await getTable(8)
+	const r9 = await getTable(8)
+	const r10 = await getTable(8)
 
-	const arrs = [r1, r2, r3, r4, r5, r6, r7, r8]
+	const arrs = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10]
 	arrs.map(elem => {
 		results = results.concat(elem)
 	})
@@ -181,7 +208,7 @@ main().catch((err) => {
 	await loadKings()
 
 	var initial = true
-	schedule.scheduleJob("*/70 * * * * *", async () => {
+	schedule.scheduleJob(`${n*10} * * * * *`, async () => {
 		//every 40 seconds
 		console.log(initial)
 		await scrapeKings(initial)
