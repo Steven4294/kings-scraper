@@ -63,7 +63,7 @@ const username = arr[n]
 console.log(username)
 const password = 'pw'
 const url = 'https://kingsclubpkr.com/'
-const base = 'https://zeiger-whalewatcher.herokuapp.com'
+const base = 'https://api.getwhalewatcher.com'
 // const base = 'http://127.0.0.1:8080'
 const post_url = `${base}/message`
 
