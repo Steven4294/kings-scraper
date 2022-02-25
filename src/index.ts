@@ -82,9 +82,7 @@ async function scrapeKings(initial: boolean) {
 
 	const results = await getTables_v2()
 	// await getTables()
-	console.log("-----")
-	console.log(results)
-	console.log("-----")
+ 
 	var options = {
 		'method': 'POST',
 		'url': post_url,
@@ -125,11 +123,6 @@ async function loadKings() {
 
 async function getTables_v2() {
 
-	// const arr = Array.from({length: 10}, (_, i) => i + 1) // [1, 2, .., N]
-	// arr.map(async r => {
-	// 	await delay(1000)
-	// 	console.log('test mcgee')
-	// })
 	var results: WhaleWatcherPlayer[] = []
 	const r1 = await getTable(1, true)
 	const r2 = await getTable(2)
@@ -154,6 +147,8 @@ async function getTables_v2() {
 }
 
 async function getTable(index: number, isFirst = false): Promise<WhaleWatcherPlayer[]> {
+	var stakes = ''
+	var tableName = ''
 	try {
 		// /html/body/div[13]/div[7]/div[1]/div[1]/div[2]/div/div[1]
 		await driver.findElement(By.xpath(`/html/body/div[13]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
@@ -162,18 +157,26 @@ async function getTable(index: number, isFirst = false): Promise<WhaleWatcherPla
 		if (isFirst) {
 			await delay(1200)
 		} else { await delay(1000) }
-		
-		await driver.findElement(By.xpath(`/html/body/div[13]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
+										// /html/body/div[13]/div[7]/div[1]/div[1]/div[2]/div/div[4]/div[2]
+
+		const stakesElem = driver.findElement(By.xpath(`html/body/div[13]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[2]`))
+		stakes = await stakesElem.getText()
+
+		const tableElem = driver.findElement(By.xpath(`/html/body/div[13]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`))
+		tableName = await tableElem.getText()
+
+ 		await driver.findElement(By.xpath(`/html/body/div[13]/div[7]/div[1]/div[1]/div[2]/div/div[${index}]/div[1]`)).click()
 		await delay(300)
 	} finally { }
 
-	return getScreennames()
+	return getScreennames(stakes, tableName)
 }
 
-function getScreennames(): Promise<WhaleWatcherPlayer[]> {
+function getScreennames(stakes: string, tableName: string): Promise<WhaleWatcherPlayer[]> {
 	return new Promise<WhaleWatcherPlayer[]>((resolve, reject) => {
 		const results: WhaleWatcherPlayer[] = []
 
+		// for each seat in details
 		const x1 = '/html/body/div[13]/div[7]/div[2]/div[2]/div/div[1]/div[1]/span[1]'
 		const x2 = '/html/body/div[13]/div[7]/div[2]/div[2]/div/div[1]/div[2]/span[1]'
 		const x3 = '/html/body/div[13]/div[7]/div[2]/div[2]/div/div[1]/div[3]/span[1]'
@@ -190,8 +193,8 @@ function getScreennames(): Promise<WhaleWatcherPlayer[]> {
 				await delay(300)
 				results.push({
 					name: text,
-					stakes: '',
-					table: '',
+					stakes: stakes,
+					table: tableName,
 				})
 			} catch {
 				resolve(results)
