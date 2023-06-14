@@ -77,8 +77,10 @@ async function loadKings() {
   try {
 
 
+	console.log('attempting to load bovada')
 	await driver.get('https://www.bovada.lv/?overlay=login');
  // https://www.bovada.lv/?overlay=login
+ console.log('loaded bovada')
 
 // 	await delay(3500)
 // // // /html/body/div[18]/div[1]/div/input[1]
