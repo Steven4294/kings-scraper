@@ -16,9 +16,9 @@ options.setChromeBinaryPath(process.env.CHROME_BINARY_PATH);
 let serviceBuilder = new chrome.ServiceBuilder(process.env.CHROME_DRIVER_PATH);
 
 //Don't forget to add these for heroku
-// options.addArguments("--headless");
-// options.addArguments("--disable-gpu");
-// options.addArguments("--no-sandbox");
+options.addArguments("--headless");
+options.addArguments("--disable-gpu");
+options.addArguments("--no-sandbox");
 // const proxy = 'fixie:SeN2772qjHvGkaR@velodrome.usefixie.com:80'
 // options.addArguments(`--proxy-server=https://${proxy}`)
 
@@ -99,7 +99,7 @@ await delay(1000)
 	await driver.findElement(By.xpath('/html/body/bx-site/bx-overlay-ch/bx-overlay/div/div/bx-login-overlay/bx-overlay-container/div/bx-overlay-body/section/bx-login-placeholder/bx-login/div/bx-form/form/div[2]/button')).sendKeys('webdriver', Key.RETURN)	
 	await delay(25000)
 
-
+console.log('attempted invalid pw')
 	await driver.findElement(By.xpath('/html/body/bx-site/bx-overlay-ch/bx-overlay/div/div/bx-login-overlay/bx-overlay-container/div/bx-overlay-body/section/bx-login-placeholder/bx-login/div/bx-form/form/div[3]/button')).sendKeys('webdriver', Key.RETURN)	
 
 	await delay(25000)
