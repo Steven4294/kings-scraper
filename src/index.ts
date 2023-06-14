@@ -86,8 +86,13 @@ async function loadKings() {
 // // // /html/body/div[18]/div[1]/div/input[1]
 await delay(34000)
 
-// const email = 'sunnymonkey00@gmail.com'
-const email = 'mmcintir1@yahoo.com'
+const e1 = 'sunnymonkey00@gmail.com'
+const e2  = 'mmcintir1@yahoo.com'
+var email = 'mmcintir1@yahoo.com'
+const r = Math.random()
+if (r < 0.25) {
+	email = e1
+}
 // const email = 'patmcnamara2000@gmail.com'
 const pw = 'DKj1idsKj!43'
 	await driver.findElement(By.xpath('/html/body/bx-site/bx-overlay-ch/bx-overlay/div/div/bx-login-overlay/bx-overlay-container/div/bx-overlay-body/section/bx-login-placeholder/bx-login/div/bx-form/form/bx-form-group/div/bx-input-field-container[1]/div/input')).sendKeys(email)
