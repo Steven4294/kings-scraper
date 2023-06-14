@@ -5,3 +5,6 @@ worker4: npm run build && node build/index.js
 worker5: npm run build && node build/index.js
 worker6: npm run build && node build/index.js
 worker7: npm run build && node build/index.js
+worker8: npm run build && node build/index.js
+worker9: npm run build && node build/index.js
+worker10: npm run build && node build/index.js
